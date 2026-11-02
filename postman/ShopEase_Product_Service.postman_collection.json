@@ -1,0 +1,97 @@
+{
+  "info": {
+    "name": "ShopEase Product Service",
+    "description": "CRUD and validation requests for the Docker-hosted ShopEase Product Service.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8003" },
+    { "key": "productId", "value": "PASTE_CREATED_PRODUCT_ID_HERE" }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": { "method": "GET", "url": "{{baseUrl}}/health" }
+    },
+    {
+      "name": "Create Product",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "  const body = pm.response.json();",
+              "  pm.collectionVariables.set('productId', body.product_id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Wireless Mouse\",\n  \"description\": \"A comfortable wireless mouse\",\n  \"price\": 799.0,\n  \"stock_quantity\": 25,\n  \"category\": \"Electronics\",\n  \"status\": \"Active\"\n}"
+        },
+        "url": "{{baseUrl}}/api/products/"
+      }
+    },
+    {
+      "name": "Create Product - Invalid Empty Name (expect 422)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"   \",\n  \"price\": 100,\n  \"stock_quantity\": 1,\n  \"category\": \"Electronics\"\n}" },
+        "url": "{{baseUrl}}/api/products/"
+      }
+    },
+    {
+      "name": "Create Product - Negative Price (expect 422)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Invalid Product\",\n  \"price\": -10,\n  \"stock_quantity\": 1,\n  \"category\": \"Electronics\"\n}" },
+        "url": "{{baseUrl}}/api/products/"
+      }
+    },
+    {
+      "name": "List Products",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/products/" }
+    },
+    {
+      "name": "List Products - Category and Pagination",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/products/?category=Electronics&skip=0&limit=5" }
+    },
+    {
+      "name": "Get Product by ID",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/products/{{productId}}" }
+    },
+    {
+      "name": "Get Product - Invalid UUID (expect 400)",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/products/not-a-uuid" }
+    },
+    {
+      "name": "Update Product",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Wireless Mouse - Updated\",\n  \"description\": \"Updated description\",\n  \"price\": 899.0,\n  \"stock_quantity\": 30,\n  \"category\": \"Electronics\",\n  \"status\": \"Active\"\n}"
+        },
+        "url": "{{baseUrl}}/api/products/{{productId}}"
+      }
+    },
+    {
+      "name": "Delete Product",
+      "request": { "method": "DELETE", "url": "{{baseUrl}}/api/products/{{productId}}" }
+    },
+    {
+      "name": "Get Deleted Product (expect 404)",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/products/{{productId}}" }
+    }
+  ]
+}
